@@ -14,7 +14,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppWizardRouteImport } from './routes/app.wizard'
 import { Route as AppScenariosRouteImport } from './routes/app.scenarios'
+import { Route as AppReceiptRouteImport } from './routes/app.receipt'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppHistoryRouteImport } from './routes/app.history'
+import { Route as AppCompareRouteImport } from './routes/app.compare'
+import { Route as AppCalculatorRouteImport } from './routes/app.calculator'
+import { Route as AppBudgetRouteImport } from './routes/app.budget'
 
 const AppRoute = AppRouteImport.update({
   id: '/app',
@@ -41,23 +46,58 @@ const AppScenariosRoute = AppScenariosRouteImport.update({
   path: '/scenarios',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReceiptRoute = AppReceiptRouteImport.update({
+  id: '/receipt',
+  path: '/receipt',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHistoryRoute = AppHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCompareRoute = AppCompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCalculatorRoute = AppCalculatorRouteImport.update({
+  id: '/calculator',
+  path: '/calculator',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBudgetRoute = AppBudgetRouteImport.update({
+  id: '/budget',
+  path: '/budget',
   getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/app/budget': typeof AppBudgetRoute
+  '/app/calculator': typeof AppCalculatorRoute
+  '/app/compare': typeof AppCompareRoute
+  '/app/history': typeof AppHistoryRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/receipt': typeof AppReceiptRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/wizard': typeof AppWizardRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app/budget': typeof AppBudgetRoute
+  '/app/calculator': typeof AppCalculatorRoute
+  '/app/compare': typeof AppCompareRoute
+  '/app/history': typeof AppHistoryRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/receipt': typeof AppReceiptRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/wizard': typeof AppWizardRoute
   '/app': typeof AppIndexRoute
@@ -66,7 +106,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/app/budget': typeof AppBudgetRoute
+  '/app/calculator': typeof AppCalculatorRoute
+  '/app/compare': typeof AppCompareRoute
+  '/app/history': typeof AppHistoryRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/receipt': typeof AppReceiptRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/wizard': typeof AppWizardRoute
   '/app/': typeof AppIndexRoute
@@ -76,17 +121,37 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/app/budget'
+    | '/app/calculator'
+    | '/app/compare'
+    | '/app/history'
     | '/app/profile'
+    | '/app/receipt'
     | '/app/scenarios'
     | '/app/wizard'
     | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app/profile' | '/app/scenarios' | '/app/wizard' | '/app'
+  to:
+    | '/'
+    | '/app/budget'
+    | '/app/calculator'
+    | '/app/compare'
+    | '/app/history'
+    | '/app/profile'
+    | '/app/receipt'
+    | '/app/scenarios'
+    | '/app/wizard'
+    | '/app'
   id:
     | '__root__'
     | '/'
     | '/app'
+    | '/app/budget'
+    | '/app/calculator'
+    | '/app/compare'
+    | '/app/history'
     | '/app/profile'
+    | '/app/receipt'
     | '/app/scenarios'
     | '/app/wizard'
     | '/app/'
@@ -134,6 +199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppScenariosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/receipt': {
+      id: '/app/receipt'
+      path: '/receipt'
+      fullPath: '/app/receipt'
+      preLoaderRoute: typeof AppReceiptRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/profile': {
       id: '/app/profile'
       path: '/profile'
@@ -141,18 +213,56 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/history': {
+      id: '/app/history'
+      path: '/history'
+      fullPath: '/app/history'
+      preLoaderRoute: typeof AppHistoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/compare': {
+      id: '/app/compare'
+      path: '/compare'
+      fullPath: '/app/compare'
+      preLoaderRoute: typeof AppCompareRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/calculator': {
+      id: '/app/calculator'
+      path: '/calculator'
+      fullPath: '/app/calculator'
+      preLoaderRoute: typeof AppCalculatorRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/budget': {
+      id: '/app/budget'
+      path: '/budget'
+      fullPath: '/app/budget'
+      preLoaderRoute: typeof AppBudgetRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppBudgetRoute: typeof AppBudgetRoute
+  AppCalculatorRoute: typeof AppCalculatorRoute
+  AppCompareRoute: typeof AppCompareRoute
+  AppHistoryRoute: typeof AppHistoryRoute
   AppProfileRoute: typeof AppProfileRoute
+  AppReceiptRoute: typeof AppReceiptRoute
   AppScenariosRoute: typeof AppScenariosRoute
   AppWizardRoute: typeof AppWizardRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppBudgetRoute: AppBudgetRoute,
+  AppCalculatorRoute: AppCalculatorRoute,
+  AppCompareRoute: AppCompareRoute,
+  AppHistoryRoute: AppHistoryRoute,
   AppProfileRoute: AppProfileRoute,
+  AppReceiptRoute: AppReceiptRoute,
   AppScenariosRoute: AppScenariosRoute,
   AppWizardRoute: AppWizardRoute,
   AppIndexRoute: AppIndexRoute,
