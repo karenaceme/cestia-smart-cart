@@ -1,19 +1,20 @@
-import { ShoppingCart, Check } from "lucide-react";
+import logoSrc from "@/assets/cestia-logo.jpeg";
 
 export function CestiaLogo({ size = 32, light = false }: { size?: number; light?: boolean }) {
-  const fg = light ? "text-white" : "text-primary-deep";
+  // Logo image has black background; on light surfaces use a dark rounded chip
+  // to maintain contrast with the brand mark.
+  const height = size + 16;
+  const wrapper = light
+    ? ""
+    : "rounded-2xl bg-[#0a0a0a] px-3 py-1.5 shadow-sm";
   return (
-    <div className="flex items-center gap-2">
-      <div
-        className="flex items-center justify-center rounded-2xl bg-primary"
-        style={{ width: size + 12, height: size + 12 }}
-      >
-        <ShoppingCart className="text-white" size={size - 4} strokeWidth={2.5} />
-      </div>
-      <div className={`flex items-baseline font-extrabold ${fg}`} style={{ fontSize: size }}>
-        <span>estia</span>
-        <Check className="text-primary -ml-1" size={size * 0.45} strokeWidth={4} />
-      </div>
+    <div className={`inline-flex items-center ${wrapper}`}>
+      <img
+        src={logoSrc}
+        alt="Cestia"
+        style={{ height, width: "auto" }}
+        className="block object-contain"
+      />
     </div>
   );
 }
