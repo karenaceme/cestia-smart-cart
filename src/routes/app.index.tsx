@@ -34,24 +34,26 @@ function Home() {
   return (
     <div className="px-5 py-6">
       <header className="flex items-center justify-between">
-        <CestiaLogo size={26} />
+        <CestiaLogo size={44} />
         <button onClick={logout} className="rounded-full p-2 text-muted-foreground hover:bg-secondary">
           <LogOut size={18} />
         </button>
       </header>
 
       {p && (
-        <Card className="mt-6 overflow-hidden rounded-3xl border-0 bg-gradient-to-br from-primary to-primary-deep p-5 text-white shadow-xl">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-2xl">{p.emoji}</div>
-            <div>
-              <p className="text-xs uppercase tracking-wider text-white/70">Tu perfil</p>
-              <h3 className="font-bold">{p.name}</h3>
+        <Card className="mt-5 overflow-hidden rounded-2xl border-0 bg-gradient-to-br from-primary to-primary-deep p-3.5 text-white shadow-md">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 text-lg">{p.emoji}</div>
+              <div className="leading-tight">
+                <p className="text-[10px] uppercase tracking-wider text-white/70">Tu perfil</p>
+                <h3 className="text-sm font-bold">{p.name}</h3>
+              </div>
             </div>
+            <Link to="/app/profile" className="text-xs font-semibold text-accent whitespace-nowrap">
+              Cambiar →
+            </Link>
           </div>
-          <Link to="/app/profile" className="mt-3 inline-block text-xs font-semibold text-accent">
-            Cambiar perfil →
-          </Link>
         </Card>
       )}
 
