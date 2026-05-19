@@ -4,15 +4,19 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Search, MapPin } from "lucide-react";
 import { formatCOP } from "@/lib/cestia-data";
-import { STORES } from "@/lib/cestia-stores";
 
 export const Route = createFileRoute("/app/compare")({ component: Compare });
+
+const STORES = [
+  { name: "Plaza Mayorista", distance: "8.5 km", mult: 0.78, badge: "Mejor precio" },
+  { name: "D1 cerca a casa", distance: "0.5 km", mult: 0.95, badge: "Más cerca" },
+  { name: "Éxito Centro", distance: "2.1 km", mult: 1.05, badge: null },
+  { name: "Carulla", distance: "1.8 km", mult: 1.18, badge: null },
+];
 
 function Compare() {
   const [q, setQ] = useState("Aguacate hass");
   const [base] = useState(5000);
-
-  const sorted = [...STORES].sort((a, b) => a.mult - b.mult);
 
   return (
     <div className="px-5 py-6">
@@ -28,21 +32,14 @@ function Compare() {
       </div>
 
       <div className="mt-5 space-y-3">
-        {sorted.map((s, i) => {
+        {STORES.sort((a, b) => a.mult - b.mult).map((s, i) => {
           const price = Math.round(base * s.mult);
           return (
             <Card key={s.name} className="rounded-2xl border-0 bg-card p-4 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white ring-1 ring-border">
-                  {s.logo ? (
-                    <img src={s.logo} alt={s.name} className="max-h-12 max-w-12 object-contain" />
-                  ) : (
-                    <span className="text-xs font-extrabold text-primary-deep">{s.name.split(" ")[0]}</span>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate font-bold text-foreground">{s.name}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-foreground">{s.name}</p>
                     {s.badge && (
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
                         i === 0 ? "bg-primary text-white" : "bg-accent text-accent-foreground"
@@ -53,7 +50,7 @@ function Compare() {
                     <MapPin size={12} /> {s.distance}
                   </p>
                 </div>
-                <p className={`text-lg font-extrabold ${i === 0 ? "text-primary" : "text-foreground"}`}>{formatCOP(price)}</p>
+                <p className={`text-xl font-extrabold ${i === 0 ? "text-primary" : "text-foreground"}`}>{formatCOP(price)}</p>
               </div>
             </Card>
           );
