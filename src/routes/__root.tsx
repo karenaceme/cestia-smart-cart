@@ -76,10 +76,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Compara, ahorra y disfruta. Tu calculadora inteligente de mercado, personalizada según tu estilo." },
       { name: "author", content: "Cestia" },
       { property: "og:title", content: "Cestia · Calculadora inteligente de mercado" },
-      { property: "og:description", content: "Compara, ahorra y disfruta con Cestia." },
+      { property: "og:description", content: "Compara, ahorra y disfruta. Tu calculadora inteligente de mercado, personalizada según tu estilo." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Cestia · Calculadora inteligente de mercado" },
+      { name: "twitter:description", content: "Compara, ahorra y disfruta. Tu calculadora inteligente de mercado, personalizada según tu estilo." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/06ba878a-0ec9-4677-adb6-35630d7ba405/id-preview-b4a6a371--3ec250a8-b0b8-4322-831d-4fe44e84a749.lovable.app-1779225280612.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/06ba878a-0ec9-4677-adb6-35630d7ba405/id-preview-b4a6a371--3ec250a8-b0b8-4322-831d-4fe44e84a749.lovable.app-1779225280612.png" },
     ],
     links: [
       {
