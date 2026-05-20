@@ -1,12 +1,16 @@
 import logoSrc from "@/assets/cestia-logo.png";
 
-export function CestiaLogo({ size = 32 }: { size?: number; light?: boolean }) {
+export function CestiaLogo({ size = 32, light = false }: { size?: number; light?: boolean }) {
   const height = size + 16;
   return (
     <img
       src={logoSrc}
       alt="Cestia"
-      style={{ height, width: "auto" }}
+      style={{
+        height,
+        width: "auto",
+        filter: light ? "brightness(0) invert(1)" : undefined,
+      }}
       className="block object-contain select-none"
     />
   );
