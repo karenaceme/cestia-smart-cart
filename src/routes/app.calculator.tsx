@@ -35,7 +35,10 @@ function Calculator() {
       const p = (data?.profile_type as ProfileType) ?? "healthy_flexible";
       setProfile(p);
       const mult = SCENARIOS[sc].multiplier;
-      setItems(PROFILE_PRODUCTS[p].map(pr => ({ ...pr, price: Math.round(pr.price * mult), qty: 1 })));
+      const base = PROFILE_PRODUCTS[p].map(pr => ({ ...pr, price: Math.round(pr.price * mult), qty: 1 }));
+      const extrasRaw = sessionStorage.getItem("cestia_extras");
+      const extras: Item[] = extrasRaw ? JSON.parse(extrasRaw) : [];
+      setItems([...base, ...extras]);
     })();
   }, [navigate]);
 
@@ -60,6 +63,7 @@ function Calculator() {
       budget, people, duration, scenario, total,
       items: items.filter(i => i.qty > 0), profile, when: new Date().toISOString(),
     }));
+    sessionStorage.removeItem("cestia_extras");
     navigate({ to: "/app/receipt" });
   };
 
@@ -109,14 +113,14 @@ function Calculator() {
       <div className="fixed bottom-20 left-0 right-0 z-30 px-4">
         <div className="mx-auto max-w-md">
           {over ? (
-            <div className="mb-2 flex items-center gap-2 rounded-2xl bg-destructive px-4 py-3 text-sm font-semibold text-destructive-foreground shadow-lg">
+            <div className="mb-2 flex items-center gap-2 rounded-2xl bg-warning px-4 py-3 text-sm font-semibold text-warning-foreground shadow-lg">
               <AlertTriangle size={18} />
-              ¡Cuidado! Te has excedido de tu presupuesto.
+              ¡Cuidado! Te has excedido de tu presupuesto por {formatCOP(total - budget)}.
             </div>
           ) : total > 0 && total < budget * 0.95 ? (
             <div className="mb-2 flex items-center gap-2 rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground shadow-lg">
               <Sparkles size={18} />
-              Aún tienes saldo, podrías agregar {SUGGESTIONS[profile]}.
+              Aún tienes presupuesto para comprar {SUGGESTIONS[profile]}.
             </div>
           ) : null}
 
