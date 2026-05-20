@@ -63,6 +63,7 @@ function Calculator() {
       budget, people, duration, scenario, total,
       items: items.filter(i => i.qty > 0), profile, when: new Date().toISOString(),
     }));
+    sessionStorage.removeItem("cestia_extras");
     navigate({ to: "/app/receipt" });
   };
 
