@@ -92,9 +92,9 @@ export const PROFILE_PRODUCTS: Record<ProfileType, Product[]> = {
 };
 
 export const SUGGESTIONS: Record<ProfileType, string> = {
-  gym_rat: "una bandeja extra de huevos para la semana",
-  clean_girl: "un kale orgánico extra",
-  meal_prepper: "más contenedores para batch cooking",
+  gym_rat: "más Proteína o Avena",
+  clean_girl: "un kale orgánico extra o berries",
+  meal_prepper: "más contenedores o quinua para batch cooking",
   healthy_flexible: "frutas de temporada para el postre",
   ultra_procesado: "una pizza extra para el viernes",
 };
