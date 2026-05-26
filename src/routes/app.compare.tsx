@@ -14,13 +14,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Search, MapPin, Plus } from "lucide-react";
-import { formatCOP, type Scenario } from "@/lib/cestia-data";
+import { formatCOP, findCatalogItem, PRODUCT_CATALOG, type Scenario, type CatalogItem } from "@/lib/cestia-data";
 import { STORES, type Store } from "@/lib/cestia-stores";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/compare")({ component: Compare });
 
-// Stores allowed by each scenario strategy
 const SCENARIO_STORES: Record<Scenario, string[]> = {
   ahorro: ["Tiendas D1", "Ara", "Makro", "Merca Mío", "PriceSmart"],
   cercania: ["Carulla", "Éxito"],
@@ -35,15 +34,21 @@ const SCENARIO_LABEL: Record<Scenario, string> = {
 
 function Compare() {
   const navigate = useNavigate();
-  const [q, setQ] = useState("Aguacate hass");
-  const [base] = useState(5000);
+  const [q, setQ] = useState("Aguacate Hass");
   const [scenario, setScenario] = useState<Scenario>("ahorro");
   const [pending, setPending] = useState<{ store: Store; price: number; cheapest: Store; cheapestPrice: number } | null>(null);
 
   useEffect(() => {
-    const sc = sessionStorage.getItem("cestia_scenario") as Scenario | null;
+    const sc = (localStorage.getItem("cestia_scenario") || sessionStorage.getItem("cestia_scenario")) as Scenario | null;
     if (sc) setScenario(sc);
   }, []);
+
+  const matched: CatalogItem | null = useMemo(() => findCatalogItem(q), [q]);
+  const base = matched?.basePrice ?? 0;
+  const suggestions = useMemo(
+    () => PRODUCT_CATALOG.filter(p => p.name.toLowerCase().includes(q.trim().toLowerCase())).slice(0, 6),
+    [q],
+  );
 
   const sorted = useMemo(() => [...STORES].sort((a, b) => a.mult - b.mult), []);
   const cheapest = sorted[0];
@@ -51,24 +56,24 @@ function Compare() {
   const allowed = SCENARIO_STORES[scenario];
 
   const addToList = (store: Store, price: number) => {
-    const raw = sessionStorage.getItem("cestia_extras");
+    if (!matched) return;
+    const raw = localStorage.getItem("cestia_extras");
     const extras = raw ? JSON.parse(raw) : [];
     extras.push({
       id: `extra_${Date.now()}`,
-      name: q,
-      unit: "und",
+      name: matched.name,
+      unit: matched.unit,
       price,
-      emoji: "🛒",
+      emoji: matched.emoji,
       store: store.name,
       qty: 1,
     });
-    sessionStorage.setItem("cestia_extras", JSON.stringify(extras));
-    toast.success(`${q} agregado desde ${store.name}`);
+    localStorage.setItem("cestia_extras", JSON.stringify(extras));
+    toast.success(`${matched.name} agregado desde ${store.name}`);
     navigate({ to: "/app/calculator" });
   };
 
   const handleAdd = (store: Store, price: number) => {
-    // If scenario restricts stores and chosen store is not allowed, but cheapest is elsewhere → warn
     if (!allowed.includes(store.name)) {
       setPending({ store, price, cheapest, cheapestPrice });
       return;
@@ -93,48 +98,80 @@ function Compare() {
 
       <div className="mt-5 flex items-center gap-2 rounded-full bg-card px-4 py-2 shadow-md">
         <Search size={18} className="text-muted-foreground" />
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar producto..." className="border-0 bg-transparent focus-visible:ring-0" />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar producto (ej: Leche, Arroz, Salchicha)..." className="border-0 bg-transparent focus-visible:ring-0" />
       </div>
 
-      <div className="mt-5 space-y-3">
-        {sorted.map((s, i) => {
-          const price = Math.round(base * s.mult);
-          const isAllowed = allowed.includes(s.name);
-          return (
-            <Card key={s.name} className="rounded-2xl border-0 bg-card p-4 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white ring-1 ring-border">
-                  {s.logo ? (
-                    <img src={s.logo} alt={s.name} className="max-h-12 max-w-12 object-contain" />
-                  ) : (
-                    <span className="text-xs font-extrabold text-primary-deep">{s.name.split(" ")[0]}</span>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate font-bold text-foreground">{s.name}</p>
-                    {i === 0 && (
-                      <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">Mejor precio</span>
-                    )}
-                    {isAllowed && (
-                      <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">Tu estrategia</span>
-                    )}
+      {!matched && (
+        <div className="mt-6 rounded-2xl bg-card p-5 text-center shadow-sm">
+          <p className="text-sm text-muted-foreground">
+            No encontramos <span className="font-bold text-foreground">"{q}"</span>. Prueba con uno de estos:
+          </p>
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
+            {(suggestions.length ? suggestions : PRODUCT_CATALOG.slice(0, 8)).map(p => (
+              <button
+                key={p.name}
+                onClick={() => setQ(p.name)}
+                className="rounded-full bg-secondary px-3 py-1.5 text-xs font-semibold text-primary-deep hover:bg-primary/10"
+              >
+                {p.emoji} {p.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {matched && (
+        <>
+          <div className="mt-5 flex items-center gap-3 rounded-2xl bg-card p-3 shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-2xl">{matched.emoji}</div>
+            <div className="flex-1">
+              <p className="font-bold text-foreground">{matched.name}</p>
+              <p className="text-xs text-muted-foreground">Precio referencia · {matched.unit}</p>
+            </div>
+            <p className="text-sm font-bold text-primary-deep">{formatCOP(base)}</p>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {sorted.map((s, i) => {
+              const price = Math.round(base * s.mult);
+              const isAllowed = allowed.includes(s.name);
+              return (
+                <Card key={s.name} className="rounded-2xl border-0 bg-card p-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white ring-1 ring-border">
+                      {s.logo ? (
+                        <img src={s.logo} alt={s.name} className="max-h-12 max-w-12 object-contain" />
+                      ) : (
+                        <span className="text-xs font-extrabold text-primary-deep">{s.name.split(" ")[0]}</span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="truncate font-bold text-foreground">{s.name}</p>
+                        {i === 0 && (
+                          <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">Mejor precio</span>
+                        )}
+                        {isAllowed && (
+                          <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">Tu estrategia</span>
+                        )}
+                      </div>
+                      <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                        <MapPin size={12} /> {s.distance}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <p className={`text-lg font-extrabold ${i === 0 ? "text-primary" : "text-foreground"}`}>{formatCOP(price)}</p>
+                      <Button size="sm" onClick={() => handleAdd(s, price)} className="h-7 rounded-full bg-primary px-3 text-xs font-bold hover:bg-primary-deep">
+                        <Plus size={12} className="mr-1" /> Agregar
+                      </Button>
+                    </div>
                   </div>
-                  <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin size={12} /> {s.distance}
-                  </p>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <p className={`text-lg font-extrabold ${i === 0 ? "text-primary" : "text-foreground"}`}>{formatCOP(price)}</p>
-                  <Button size="sm" onClick={() => handleAdd(s, price)} className="h-7 rounded-full bg-primary px-3 text-xs font-bold hover:bg-primary-deep">
-                    <Plus size={12} className="mr-1" /> Agregar
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+                </Card>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
         <AlertDialogContent className="rounded-3xl">

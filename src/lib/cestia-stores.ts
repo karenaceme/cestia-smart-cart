@@ -24,3 +24,25 @@ export const STORES: Store[] = [
   { name: "Jumbo", logo: jumbo, distance: "3.4 km", mult: 1.12 },
   { name: "Carulla", logo: carulla, distance: "1.8 km", mult: 1.2 },
 ];
+
+export const SCENARIO_STORE_NAMES: Record<"ahorro" | "cercania" | "estrategia", string[]> = {
+  ahorro: ["Tiendas D1", "Ara", "Makro"],
+  cercania: ["Carulla", "Éxito"],
+  estrategia: ["Merca Mío", "Éxito", "Carulla"],
+};
+
+export function getStoreByName(name: string): Store | undefined {
+  return STORES.find(s => s.name === name);
+}
+
+export function pickStoreForItem(
+  scenario: "ahorro" | "cercania" | "estrategia",
+  seed: string | number,
+): Store {
+  const names = SCENARIO_STORE_NAMES[scenario];
+  const key = typeof seed === "string"
+    ? Array.from(seed).reduce((acc, c) => acc + c.charCodeAt(0), 0)
+    : seed;
+  const name = names[Math.abs(key) % names.length];
+  return getStoreByName(name) ?? STORES[0];
+}
