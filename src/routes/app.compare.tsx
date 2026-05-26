@@ -56,24 +56,24 @@ function Compare() {
   const allowed = SCENARIO_STORES[scenario];
 
   const addToList = (store: Store, price: number) => {
-    const raw = sessionStorage.getItem("cestia_extras");
+    if (!matched) return;
+    const raw = localStorage.getItem("cestia_extras");
     const extras = raw ? JSON.parse(raw) : [];
     extras.push({
       id: `extra_${Date.now()}`,
-      name: q,
-      unit: "und",
+      name: matched.name,
+      unit: matched.unit,
       price,
-      emoji: "🛒",
+      emoji: matched.emoji,
       store: store.name,
       qty: 1,
     });
-    sessionStorage.setItem("cestia_extras", JSON.stringify(extras));
-    toast.success(`${q} agregado desde ${store.name}`);
+    localStorage.setItem("cestia_extras", JSON.stringify(extras));
+    toast.success(`${matched.name} agregado desde ${store.name}`);
     navigate({ to: "/app/calculator" });
   };
 
   const handleAdd = (store: Store, price: number) => {
-    // If scenario restricts stores and chosen store is not allowed, but cheapest is elsewhere → warn
     if (!allowed.includes(store.name)) {
       setPending({ store, price, cheapest, cheapestPrice });
       return;
