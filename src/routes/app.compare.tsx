@@ -14,13 +14,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Search, MapPin, Plus } from "lucide-react";
-import { formatCOP, type Scenario } from "@/lib/cestia-data";
+import { formatCOP, findCatalogItem, PRODUCT_CATALOG, type Scenario, type CatalogItem } from "@/lib/cestia-data";
 import { STORES, type Store } from "@/lib/cestia-stores";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/compare")({ component: Compare });
 
-// Stores allowed by each scenario strategy
 const SCENARIO_STORES: Record<Scenario, string[]> = {
   ahorro: ["Tiendas D1", "Ara", "Makro", "Merca Mío", "PriceSmart"],
   cercania: ["Carulla", "Éxito"],
@@ -35,15 +34,21 @@ const SCENARIO_LABEL: Record<Scenario, string> = {
 
 function Compare() {
   const navigate = useNavigate();
-  const [q, setQ] = useState("Aguacate hass");
-  const [base] = useState(5000);
+  const [q, setQ] = useState("Aguacate Hass");
   const [scenario, setScenario] = useState<Scenario>("ahorro");
   const [pending, setPending] = useState<{ store: Store; price: number; cheapest: Store; cheapestPrice: number } | null>(null);
 
   useEffect(() => {
-    const sc = sessionStorage.getItem("cestia_scenario") as Scenario | null;
+    const sc = (localStorage.getItem("cestia_scenario") || sessionStorage.getItem("cestia_scenario")) as Scenario | null;
     if (sc) setScenario(sc);
   }, []);
+
+  const matched: CatalogItem | null = useMemo(() => findCatalogItem(q), [q]);
+  const base = matched?.basePrice ?? 0;
+  const suggestions = useMemo(
+    () => PRODUCT_CATALOG.filter(p => p.name.toLowerCase().includes(q.trim().toLowerCase())).slice(0, 6),
+    [q],
+  );
 
   const sorted = useMemo(() => [...STORES].sort((a, b) => a.mult - b.mult), []);
   const cheapest = sorted[0];
