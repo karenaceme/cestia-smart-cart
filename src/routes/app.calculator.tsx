@@ -120,26 +120,39 @@ function Calculator() {
       <p className="mt-1 text-sm text-muted-foreground">{SCENARIOS[scenario].title}</p>
 
       <div className="mt-5 space-y-3">
-        {items.map(i => (
-          <Card key={i.id} className="rounded-2xl border-0 bg-card p-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-2xl">{i.emoji}</div>
-              <div className="flex-1">
-                <p className="font-bold text-foreground">{i.name}</p>
-                <p className="text-xs text-muted-foreground">{formatCOP(i.price)} / {i.unit}</p>
+        {items.map((i, idx) => {
+          const store: Store = i.store
+            ? (getStoreByName(i.store) ?? pickStoreForItem(scenario, `${i.id}_${idx}`))
+            : pickStoreForItem(scenario, `${i.id}_${idx}`);
+          return (
+            <Card key={i.id} className="rounded-2xl border-0 bg-card p-4 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-2xl">{i.emoji}</div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-bold text-foreground">{i.name}</p>
+                  <p className="text-xs text-muted-foreground">{formatCOP(i.price)} / {i.unit}</p>
+                  <div className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-secondary px-2 py-0.5">
+                    {store.logo ? (
+                      <img src={store.logo} alt={store.name} className="h-4 w-4 rounded-sm object-contain" />
+                    ) : (
+                      <span className="text-[9px] font-extrabold text-primary-deep">{store.name.split(" ")[0]}</span>
+                    )}
+                    <span className="text-[10px] font-bold text-primary-deep">{store.name}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => change(i.id, -1)} className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-primary-deep">
+                    <Minus size={16} />
+                  </button>
+                  <span className="w-6 text-center font-bold">{i.qty}</span>
+                  <button onClick={() => change(i.id, 1)} className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
+                    <Plus size={16} />
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button onClick={() => change(i.id, -1)} className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-primary-deep">
-                  <Minus size={16} />
-                </button>
-                <span className="w-6 text-center font-bold">{i.qty}</span>
-                <button onClick={() => change(i.id, 1)} className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
-                  <Plus size={16} />
-                </button>
-              </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </div>
 
       <Link to="/app/compare">
