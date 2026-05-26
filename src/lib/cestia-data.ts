@@ -128,5 +128,44 @@ export const SCENARIOS: Record<
   },
 };
 
+// Catalog of common grocery items with base reference prices (COP)
+export type CatalogItem = { name: string; unit: string; basePrice: number; emoji: string; aliases?: string[] };
+
+export const PRODUCT_CATALOG: CatalogItem[] = [
+  { name: "Aguacate Hass", unit: "und", basePrice: 4500, emoji: "🥑", aliases: ["aguacate", "hass", "palta"] },
+  { name: "Salchicha", unit: "500g", basePrice: 12500, emoji: "🌭", aliases: ["salchichas", "frankfurt", "viena"] },
+  { name: "Arepa", unit: "paquete x5", basePrice: 6800, emoji: "🫓", aliases: ["arepas"] },
+  { name: "Leche entera", unit: "litro", basePrice: 5200, emoji: "🥛", aliases: ["leche", "lacteo"] },
+  { name: "Huevos AA", unit: "bandeja x30", basePrice: 16500, emoji: "🥚", aliases: ["huevo", "huevos"] },
+  { name: "Pan tajado", unit: "und", basePrice: 7800, emoji: "🍞", aliases: ["pan", "pan integral", "pan blanco"] },
+  { name: "Arroz blanco", unit: "kg", basePrice: 5200, emoji: "🍚", aliases: ["arroz"] },
+  { name: "Pechuga de pollo", unit: "kg", basePrice: 18000, emoji: "🍗", aliases: ["pollo", "pechuga"] },
+  { name: "Atún en agua", unit: "lata 170g", basePrice: 5800, emoji: "🐟", aliases: ["atun"] },
+  { name: "Yogur griego", unit: "500g", basePrice: 11500, emoji: "🥣", aliases: ["yogurt", "yogur", "griego"] },
+  { name: "Aceite vegetal", unit: "litro", basePrice: 14500, emoji: "🫒", aliases: ["aceite", "girasol", "oliva"] },
+  { name: "Café molido", unit: "500g", basePrice: 22500, emoji: "☕", aliases: ["cafe", "tinto"] },
+  { name: "Manzana roja", unit: "kg", basePrice: 7200, emoji: "🍎", aliases: ["manzana", "manzanas"] },
+  { name: "Queso campesino", unit: "500g", basePrice: 13800, emoji: "🧀", aliases: ["queso", "mozzarella", "doble crema"] },
+  { name: "Pasta espagueti", unit: "500g", basePrice: 4800, emoji: "🍝", aliases: ["pasta", "espagueti", "tallarines"] },
+  { name: "Detergente líquido", unit: "1.8L", basePrice: 24500, emoji: "🧴", aliases: ["detergente", "jabon", "ropa"] },
+  { name: "Papel higiénico", unit: "x12", basePrice: 28500, emoji: "🧻", aliases: ["papel", "higienico"] },
+  { name: "Banano", unit: "kg", basePrice: 3500, emoji: "🍌", aliases: ["banana", "platano"] },
+  { name: "Cebolla cabezona", unit: "kg", basePrice: 4200, emoji: "🧅", aliases: ["cebolla"] },
+  { name: "Tomate chonto", unit: "kg", basePrice: 4800, emoji: "🍅", aliases: ["tomate"] },
+];
+
+export function findCatalogItem(query: string): CatalogItem | null {
+  const q = query.trim().toLowerCase();
+  if (!q) return null;
+  // exact / contains by name
+  let hit = PRODUCT_CATALOG.find(p => p.name.toLowerCase() === q);
+  if (hit) return hit;
+  hit = PRODUCT_CATALOG.find(p => p.name.toLowerCase().includes(q) || q.includes(p.name.toLowerCase()));
+  if (hit) return hit;
+  // alias match
+  hit = PRODUCT_CATALOG.find(p => p.aliases?.some(a => a.includes(q) || q.includes(a)));
+  return hit ?? null;
+}
+
 export const formatCOP = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
