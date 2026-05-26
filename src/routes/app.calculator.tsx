@@ -4,12 +4,16 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Minus, Plus, AlertTriangle, Sparkles, Download, Plus as PlusIcon } from "lucide-react";
 import { PROFILE_PRODUCTS, PROFILES, SCENARIOS, SUGGESTIONS, formatCOP, type ProfileType, type Scenario, type Product } from "@/lib/cestia-data";
+import { pickStoreForItem, getStoreByName, type Store } from "@/lib/cestia-stores";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/calculator")({ component: Calculator });
 
-type Item = Product & { qty: number };
+type Item = Product & { qty: number; store?: string };
+
+const ITEMS_KEY = "cestia_items";
+const ITEMS_SIG_KEY = "cestia_items_sig";
 
 function Calculator() {
   const navigate = useNavigate();
@@ -19,28 +23,59 @@ function Calculator() {
   const [scenario, setScenario] = useState<Scenario>("ahorro");
   const [profile, setProfile] = useState<ProfileType>("healthy_flexible");
   const [items, setItems] = useState<Item[]>([]);
+  const [ready, setReady] = useState(false);
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
-    const w = sessionStorage.getItem("cestia_wizard");
-    const sc = sessionStorage.getItem("cestia_scenario") as Scenario | null;
+    const w = localStorage.getItem("cestia_wizard") || sessionStorage.getItem("cestia_wizard");
+    const sc = (localStorage.getItem("cestia_scenario") || sessionStorage.getItem("cestia_scenario")) as Scenario | null;
     if (!w || !sc) { navigate({ to: "/app/wizard" }); return; }
     const wp = JSON.parse(w);
     setBudget(wp.budget); setPeople(wp.people); setDuration(wp.duration); setScenario(sc);
 
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase.from("profiles").select("profile_type").eq("id", user.id).maybeSingle();
-      const p = (data?.profile_type as ProfileType) ?? "healthy_flexible";
+      let p: ProfileType = "healthy_flexible";
+      if (user) {
+        const { data } = await supabase.from("profiles").select("profile_type").eq("id", user.id).maybeSingle();
+        p = (data?.profile_type as ProfileType) ?? "healthy_flexible";
+      }
       setProfile(p);
-      const mult = SCENARIOS[sc].multiplier;
-      const base = PROFILE_PRODUCTS[p].map(pr => ({ ...pr, price: Math.round(pr.price * mult), qty: 1 }));
-      const extrasRaw = sessionStorage.getItem("cestia_extras");
+
+      const extrasRaw = localStorage.getItem("cestia_extras") || sessionStorage.getItem("cestia_extras");
       const extras: Item[] = extrasRaw ? JSON.parse(extrasRaw) : [];
-      setItems([...base, ...extras]);
+      const sig = `${p}|${sc}|${wp.budget}|${wp.people}|${wp.duration}|${extras.length}`;
+      const savedSig = localStorage.getItem(ITEMS_SIG_KEY);
+      const savedItemsRaw = localStorage.getItem(ITEMS_KEY);
+
+      if (savedSig === sig && savedItemsRaw) {
+        setItems(JSON.parse(savedItemsRaw));
+      } else {
+        const mult = SCENARIOS[sc].multiplier;
+        const base: Item[] = PROFILE_PRODUCTS[p].map((pr, idx) => ({
+          ...pr,
+          price: Math.round(pr.price * mult),
+          qty: 1,
+          store: pickStoreForItem(sc, `${pr.id}_${idx}`).name,
+        }));
+        const extrasWithStore = extras.map((e, idx) => ({
+          ...e,
+          store: e.store ?? pickStoreForItem(sc, `${e.id}_${idx}`).name,
+        }));
+        const merged = [...base, ...extrasWithStore];
+        setItems(merged);
+        localStorage.setItem(ITEMS_KEY, JSON.stringify(merged));
+        localStorage.setItem(ITEMS_SIG_KEY, sig);
+      }
+      setReady(true);
     })();
   }, [navigate]);
+
+  // Persist any change (qty edits) so navigating away doesn't lose state
+  useEffect(() => {
+    if (!ready) return;
+    localStorage.setItem(ITEMS_KEY, JSON.stringify(items));
+  }, [items, ready]);
 
   const total = useMemo(() => items.reduce((s, i) => s + i.price * i.qty, 0), [items]);
   const over = total > budget;
@@ -63,7 +98,11 @@ function Calculator() {
       budget, people, duration, scenario, total,
       items: items.filter(i => i.qty > 0), profile, when: new Date().toISOString(),
     }));
+    localStorage.removeItem("cestia_extras");
     sessionStorage.removeItem("cestia_extras");
+    localStorage.removeItem(ITEMS_KEY);
+    localStorage.removeItem(ITEMS_SIG_KEY);
+    toast.success("Lista guardada");
     navigate({ to: "/app/receipt" });
   };
 
